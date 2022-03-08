@@ -4,6 +4,7 @@ import com.ibm.crud.domain.Card;
 import com.ibm.crud.domain.Client;
 import com.ibm.crud.domain.Module;
 import com.ibm.crud.domain.PkId;
+import com.ibm.crud.service.CardService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Assert;
 import org.junit.Test;
@@ -22,6 +23,8 @@ public class ClientRepositoryTest {
     private ClientRepository clientRepository;
     @Autowired
     private CardRepository cardRepository;
+    @Autowired
+    private CardService cardService;
 
     /**
      * find by all cards and Consumption history by client id
@@ -57,5 +60,29 @@ public class ClientRepositoryTest {
         cardRepository.saveAndFlush(card);
         client.getCards().add(card);
         clientRepository.saveAndFlush(client);
+    }
+
+    @Test
+    public void insert() throws Exception {
+        Card card = new Card();
+        card.setType("child2");
+        card.setCcv("child2");
+        card.setModuleId(2L);
+        card.setNumber("child2");
+        card.setClientId(3L);
+        card = cardRepository.saveAndFlush(card);
+        Assert.assertNotNull(card.getId());
+    }
+
+    @Test
+    public void insertByService() {
+        Card card = new Card();
+        card.setType("child2");
+        card.setCcv("child2");
+        card.setModuleId(2L);
+        card.setNumber("child2");
+        card.setClientId(3L);
+        cardService.insert(card);
+        Assert.assertNotNull(card.getId());
     }
 }
