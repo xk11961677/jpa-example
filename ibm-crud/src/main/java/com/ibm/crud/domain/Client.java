@@ -1,49 +1,69 @@
 package com.ibm.crud.domain;
 
-import org.hibernate.validator.constraints.Length;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.Pattern;
+import javax.persistence.Entity;
+import javax.persistence.ForeignKey;
+import javax.persistence.OrderBy;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Set;
 
+import static org.hibernate.id.enhanced.TableGenerator.SEGMENT_VALUE_PARAM;
+
 @Entity
-@Table(name = "client")
+@Table(name = "client",uniqueConstraints=@UniqueConstraint(columnNames={"id", "module_id"}))
+@IdClass(PkId.class)
+//@TableGenerator(
+//        name="ID_CLIENT",
+//        table = "PK_GENERATOR_TABLE",
+//        pkColumnName = "PK_COLUMN",
+//        valueColumnName = "PK_VALUE",
+//        pkColumnValue = "ID_CLIENT",
+//        allocationSize=1)
+@GenericGenerator(name = "id_gen", strategy = "com.ibm.crud.common.IdGenerator", parameters = {@org.hibernate.annotations.Parameter(name = SEGMENT_VALUE_PARAM, value = "t_client")})
 public class Client implements Serializable {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+//    @GeneratedValue(strategy = GenerationType.TABLE, generator = "ID_CARD")
+    @GeneratedValue(generator = "id_gen")
+    private Long id;
+
+    @Id
+    @Column(name = "module_id")
+//    @GeneratedValue(strategy = GenerationType.TABLE, generator = "ID_MODULE")
+//    @GeneratedValue(generator = "id_gen")
+    private Long moduleId;
 
     @Column
-    @Length(max = 50)
+//    @Length(max = 50)
     private String name;
 
-    @Length(max = 100)
-    @Pattern(regexp = "^[a-zA-Z0-9]+$")
+//    @Length(max = 100)
+//    @Pattern(regexp = "^[a-zA-Z0-9]+$")
     private String address;
 
-    @Length(max = 30)
-    @Pattern(regexp = "^[a-zA-Z0-9]+$")
+//    @Length(max = 30)
+//    @Pattern(regexp = "^[a-zA-Z0-9]+$")
     private String city;
 
-    @Length(max = 20)
-    @Pattern(regexp = "^[0-9]+$")
+//    @Length(max = 20)
+//    @Pattern(regexp = "^[0-9]+$")
     private String telephone;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
+    //cascade = CascadeType.ALL mappedBy = "client",
+    @OneToMany(mappedBy = "client",fetch = FetchType.LAZY)
+    @org.hibernate.annotations.ForeignKey(name = "none")
+    @Fetch(FetchMode.SUBSELECT)
+    @OrderBy("id , moduleId asc")
     private Set<Card> cards;
 
-    @OneToMany(mappedBy = "client", cascade = CascadeType.ALL)
-    private Set<ConsumptionHis> consumptionHis;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @LazyToOne(LazyToOneOption.NO_PROXY)
+    @JoinColumn(name = "module_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT), insertable = false, updatable = false)
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Module module;
 
     public String getName() {
         return name;
@@ -85,12 +105,28 @@ public class Client implements Serializable {
         this.cards = cards;
     }
 
-    public Set<ConsumptionHis> getConsumptionHis() {
-        return consumptionHis;
+    public Module getModule() {
+        return module;
     }
 
-    public void setConsumptionHis(Set<ConsumptionHis> consumptionHis) {
-        this.consumptionHis = consumptionHis;
+    public void setModule(Module module) {
+        this.module = module;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getModuleId() {
+        return moduleId;
+    }
+
+    public void setModuleId(Long moduleId) {
+        this.moduleId = moduleId;
     }
 
     @Override
@@ -100,19 +136,10 @@ public class Client implements Serializable {
                 id, name, address, city, telephone);
         if (cards != null) {
             for (Card card : cards) {
-                result += String.format(
-                        "Card[id=%d, number='%s', ccv='%s', type='%s']%n",
+                result += String.format("Card[id=%d, number='%s', ccv='%s', type='%s']%n",
                         card.getId(), card.getNumber(), card.getCcv(), card.getType());
             }
         }
-        if (consumptionHis != null) {
-            for(ConsumptionHis his: consumptionHis){
-                result += String.format(
-                        "ConsumptionHis[id=%d, consumption_date='%s', description='%s', amount='%s']%n",
-                        his.getId(), his.getConsumptionDate(), his.getDescription(), his.getAmount());
-            }
-        }
-
         return result;
     }
 }

@@ -8,27 +8,44 @@
     <artifactId>jpa-example</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
-        <module>one-to-one-foreignkey</module>
-        <module>one-to-one-primarykey</module>
-        <module>one-to-many</module>
-        <module>many-to-many</module>
-        <module>many-to-many-extra-columns</module>
-        <module>initial-value-generator</module>
-        <module>h2-webconsole</module>
+        <!--        <module>one-to-one-foreignkey</module>-->
+        <!--        <module>one-to-one-primarykey</module>-->
+        <!--        <module>one-to-many</module>-->
+        <!--        <module>many-to-many</module>-->
+        <!--        <module>many-to-many-extra-columns</module>-->
+        <!--        <module>initial-value-generator</module>-->
+        <!--        <module>h2-webconsole</module>-->
         <module>ibm-crud</module>
     </modules>
     <packaging>pom</packaging>
 
-
+    <properties>
+        <java.version>17</java.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.spring.platform</groupId>
-                <artifactId>platform-bom</artifactId>
-                <version>Brussels-SR6</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>2.6.3</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
