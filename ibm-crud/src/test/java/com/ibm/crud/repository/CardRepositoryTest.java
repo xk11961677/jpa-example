@@ -95,4 +95,19 @@ public class CardRepositoryTest {
         card.setClientId(3L);
         cardRepository.save(card);
     }
+
+
+    /**
+     * 先删除在添加
+     * @throws Exception
+     */
+    @Test
+    public void deleteAndInsertTest() throws Exception {
+        PkId id = new PkId();
+        id.setId(7L);
+        id.setModuleId(7L);
+        Card card = cardRepository.findById(id).orElseThrow();
+        cardRepository.deleteById(id);
+        cardRepository.save(card);
+    }
 }
