@@ -10,6 +10,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import java.util.List;
 
@@ -24,6 +28,8 @@ public class CardRepositoryTest {
     @Autowired
     private ClientRepository clientRepository;
 
+    @Autowired
+    private PlatformTransactionManager transactionManager;
 
     /**
      * find by all Consumption history by card id
@@ -103,11 +109,25 @@ public class CardRepositoryTest {
      */
     @Test
     public void deleteAndInsertTest() throws Exception {
+        DefaultTransactionDefinition def = new DefaultTransactionDefinition();
+        def.setIsolationLevel(TransactionDefinition.ISOLATION_SERIALIZABLE);
+        def.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
+        def.setTimeout(15);
+        TransactionStatus status = transactionManager.getTransaction(def);
         PkId id = new PkId();
         id.setId(7L);
         id.setModuleId(7L);
         Card card = cardRepository.findById(id).orElseThrow();
-        cardRepository.deleteById(id);
-        cardRepository.save(card);
+        try {
+            cardRepository.delete(card);
+            cardRepository.flush();
+//            cardRepository.deleteById(id);
+            cardRepository.save(card);
+
+            transactionManager.commit(status);
+        }catch (Exception e) {
+            transactionManager.rollback(status);
+            throw e;
+        }
     }
 }
